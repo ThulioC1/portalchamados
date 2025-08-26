@@ -95,7 +95,7 @@ export default function NewTicketPage() {
           try {
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("upload_preset", "portalchamados"); // Usando preset padrão
+            formData.append("upload_preset", "dygr2yg24"); // Usando preset padrão
             formData.append("folder", "ticket-attachments"); // Organizar em pasta
 
             const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
