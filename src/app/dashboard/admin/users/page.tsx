@@ -89,9 +89,19 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const usersSnapshot = await getDocs(collection(db, "users"));
+      // Adicionar console.log para depuração
+      console.log("Buscando usuários...");
+      
+      // Usar a coleção correta para usuários
+      const usersCollection = collection(db, "users");
+      console.log("Coleção de usuários:", usersCollection);
+      
+      const usersSnapshot = await getDocs(usersCollection);
+      console.log("Snapshot de usuários:", usersSnapshot.size, "documentos encontrados");
+      
       const usersData = usersSnapshot.docs.map(doc => {
         const data = doc.data();
+        console.log("Dados do usuário:", doc.id, data);
         return {
           id: doc.id,
           email: data.email,
@@ -102,6 +112,7 @@ export default function AdminUsersPage() {
           createdAt: data.createdAt?.toDate() || new Date(),
         };
       });
+      console.log("Dados de usuários processados:", usersData.length);
       setUsers(usersData);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);

@@ -69,6 +69,20 @@ export default function RegisterPage() {
         displayName: values.name,
       });
       
+      // Salvar dados do usuário no Firestore
+      const { setDoc, doc, serverTimestamp } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        displayName: values.name,
+        email: values.email,
+        photoURL: null,
+        isAdmin: false,
+        isBlocked: false,
+        createdAt: serverTimestamp(),
+      });
+      
       toast.success("Conta criada com sucesso!");
       router.push("/dashboard");
     } catch (error: AuthError) {

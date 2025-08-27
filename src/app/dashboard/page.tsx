@@ -85,8 +85,8 @@ export default function DashboardPage() {
       ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeTab === "all") return matchesSearch;
-    if (activeTab === "open") return matchesSearch && ticket.status === "open";
-    if (activeTab === "closed") return matchesSearch && ticket.status === "closed";
+    if (activeTab === "open") return matchesSearch && ticket.status === "Aberto";
+    if (activeTab === "closed") return matchesSearch && ticket.status === "Fechado";
     return matchesSearch;
   });
 

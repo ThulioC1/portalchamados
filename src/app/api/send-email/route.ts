@@ -3,7 +3,12 @@ import { Resend } from 'resend';
 import renderTicketNotificationEmail from '@/emails/ticket-notification';
 import renderStatusUpdateEmail from '@/emails/status-update';
 
+// Inicializar Resend com a API key
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Log para debug da API key
+console.log('[EMAIL CONFIG] API Key configurada:', process.env.RESEND_API_KEY ? 'Sim (valor presente)' : 'Não (valor ausente)');
+console.log('[EMAIL CONFIG] EMAIL_FROM:', process.env.EMAIL_FROM);
 
 // Função para registrar logs de email para depuração
 const logEmailAttempt = (type: string, data: any, error?: any) => {
