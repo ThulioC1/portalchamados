@@ -5,7 +5,7 @@ export type Ticket = {
   department: 'Engenharia' | 'Comercial' | 'RH' | 'Atendimento' | 'Suprimentos' | 'Financeiro' | 'TI' | 'Contabilidade';
   description: string;
   priority: 'Baixa' | 'Média' | 'Alta';
-  status: 'open' | 'closed';
+  status: 'Aberto' | 'Em andamento' | 'Fechado';
   createdAt: Date;
   deadline?: Date; // O prazo pode não existir
   userId: string;
@@ -13,4 +13,12 @@ export type Ticket = {
   userEmail: string; // Email do usuário para notificações
   attachmentUrl?: string;
   attachmentName?: string;
+  comments?: any[];
+  closedBy?: {
+    userId: string;
+    userName: string;
+    userEmail?: string;
+    closedAt: Date;
+  };
+  updatedAt?: Date;
 };

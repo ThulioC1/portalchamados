@@ -19,7 +19,7 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("open");
   const userIsAdmin = user ? isAdmin(user.email) : false;
   const router = useRouter();
 
@@ -39,10 +39,10 @@ export default function DashboardPage() {
           );
         } else {
           // Usuários normais veem apenas seus próprios tickets
+          // Usar apenas o filtro por userId sem ordenação para evitar necessidade de índice composto
           ticketsQuery = query(
             collection(db, "tickets"),
-            where("userId", "==", user.uid),
-            orderBy("createdAt", "desc")
+            where("userId", "==", user.uid)
           );
         }
 
@@ -130,12 +130,12 @@ export default function DashboardPage() {
           />
         </div>
 
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="open" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="open">Abertos</TabsTrigger>
             <TabsTrigger value="in_progress">Em Andamento</TabsTrigger>
             <TabsTrigger value="closed">Fechados</TabsTrigger>
+            <TabsTrigger value="all">Todos</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="space-y-4">
             {filteredTickets.length === 0 ? (

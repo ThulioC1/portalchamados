@@ -32,7 +32,7 @@ export function useUpload() {
       // Criar um FormData para enviar o arquivo
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ticketflow');
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_default');
 
       // Iniciar o upload para o Cloudinary
       const response = await fetch(

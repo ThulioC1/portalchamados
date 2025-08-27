@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, PlusCircle, BarChart3 } from "lucide-react";
+import { LayoutDashboard, PlusCircle, BarChart3, Users } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
-import { isAdmin } from "@/lib/auth-utils";
+import { isAdmin, checkAdminStatus } from "@/lib/auth-utils";
+import { useEffect, useState } from "react";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
@@ -20,7 +21,28 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 
 export function AppSidebar({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   const [user] = useAuthState(auth);
-  const isUserAdmin = user ? isAdmin(user.email) : false;
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user) {
+        // Primeiro verifica pelo método legado (email)
+        const legacyAdminCheck = isAdmin(user.email);
+        if (legacyAdminCheck) {
+          setIsUserAdmin(true);
+          return;
+        }
+        
+        // Depois verifica pelo Firestore
+        const firestoreAdminCheck = await checkAdminStatus(user.uid);
+        setIsUserAdmin(firestoreAdminCheck);
+      } else {
+        setIsUserAdmin(false);
+      }
+    };
+    
+    checkAdmin();
+  }, [user]);
 
   const items = [
     {
@@ -37,6 +59,12 @@ export function AppSidebar({ className, ...props }: React.HTMLAttributes<HTMLEle
       href: "/dashboard/analytics",
       title: "Análises",
       icon: <BarChart3 className="mr-2 h-4 w-4" />,
+      adminOnly: true,
+    },
+    {
+      href: "/dashboard/admin/users",
+      title: "Usuários",
+      icon: <Users className="mr-2 h-4 w-4" />,
       adminOnly: true,
     },
   ];

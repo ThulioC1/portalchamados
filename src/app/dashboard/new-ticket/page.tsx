@@ -95,7 +95,7 @@ export default function NewTicketPage() {
           try {
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("upload_preset", "dygr2yg24"); // Usando preset padrão
+            formData.append("upload_preset", "ml_default"); // Usando preset padrão para uploads não autenticados
             formData.append("folder", "ticket-attachments"); // Organizar em pasta
 
             const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -161,6 +161,9 @@ export default function NewTicketPage() {
       const createTicket = async (retries = 3) => {
         try {
           // Usar transação para garantir numeração sequencial única
+          let newTicketId;
+          let nextTicketNumber = 1; // Inicializar fora da transação
+          
           await runTransaction(db, async (transaction) => {
             // Buscar o último número de ticket
             const ticketsRef = collection(db, "tickets");
@@ -171,7 +174,6 @@ export default function NewTicketPage() {
             );
             
             const lastTicketSnapshot = await getDocs(lastTicketQuery);
-            let nextTicketNumber = 1; // Começar do 1 se não houver tickets
             
             if (!lastTicketSnapshot.empty) {
               const lastTicket = lastTicketSnapshot.docs[0].data();
@@ -180,13 +182,14 @@ export default function NewTicketPage() {
             
             // Criar o novo ticket com número sequencial
             const newTicketRef = doc(collection(db, "tickets"));
+            newTicketId = newTicketRef.id;
             transaction.set(newTicketRef, {
               ticketNumber: nextTicketNumber,
               subject: values.subject,
               department: values.department,
               description: values.description,
               priority: values.priority,
-              status: "open",
+              status: "Aberto",
               createdAt: serverTimestamp(),
               userId: user.uid,
               userName: user.displayName || "Usuário",
@@ -195,6 +198,17 @@ export default function NewTicketPage() {
               attachmentName,
             });
           });
+          
+          // Retornar o objeto do ticket com o ID
+          return {
+            id: newTicketId,
+            ticketNumber: nextTicketNumber,
+            subject: values.subject,
+            department: values.department,
+            description: values.description,
+            priority: values.priority,
+            status: "Aberto"
+          };
         } catch (error: unknown) {
           console.error("Erro ao criar ticket:", error);
           
@@ -217,26 +231,37 @@ export default function NewTicketPage() {
         }
       };
       
-      await createTicket();
+      const newTicket = await createTicket();
 
       // Enviar email de notificação (opcional)
       try {
-        await fetch("/api/send-email", {
+        const emailResponse = await fetch("/api/send-email", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             type: "new-ticket",
+            ticketId: newTicket?.id || "N/A",
             subject: values.subject,
             department: values.department,
+            priority: values.priority,
+            description: values.description,
             userName: user.displayName || "Usuário",
             userEmail: user.email,
           }),
         });
+        
+        if (!emailResponse.ok) {
+          const errorData = await emailResponse.json().catch(() => ({}));
+          console.error("Erro na resposta do servidor de email:", errorData);
+          // Mostrar toast de aviso, mas não interromper o fluxo
+          toast.warning("O chamado foi criado, mas pode haver problemas com a notificação por email.");
+        }
       } catch (emailError) {
         console.error("Erro ao enviar email:", emailError);
-        // Não interrompe o fluxo se o email falhar
+        // Mostrar toast de aviso, mas não interromper o fluxo
+        toast.warning("O chamado foi criado, mas pode haver problemas com a notificação por email.");
       }
 
       toast.success("Chamado criado com sucesso!");

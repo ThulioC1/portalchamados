@@ -47,9 +47,19 @@ export default function LoginPage() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsSubmitting(true);
-      await signInWithEmailAndPassword(auth, values.email, values.password);
-      toast.success("Login realizado com sucesso!");
-      router.push("/dashboard");
+      // Adicionando um timeout para garantir que a autenticação tenha tempo suficiente para processar
+      const userCredential = await Promise.race([
+        signInWithEmailAndPassword(auth, values.email, values.password),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Tempo limite de autenticação excedido')), 30000)
+        )
+      ]);
+      
+      // Garantir que o usuário foi autenticado corretamente
+      if (userCredential) {
+        toast.success("Login realizado com sucesso!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       console.error("Erro ao fazer login:", error);
       
@@ -58,6 +68,10 @@ export default function LoginPage() {
         errorMessage = "Email ou senha incorretos.";
       } else if (error.code === "auth/too-many-requests") {
         errorMessage = "Muitas tentativas de login. Tente novamente mais tarde.";
+      } else if (error.code === "auth/network-request-failed") {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (error.message && error.message.includes('Tempo limite')) {
+        errorMessage = "O login está demorando muito. Verifique sua conexão ou tente novamente mais tarde.";
       }
       
       toast.error(errorMessage);
