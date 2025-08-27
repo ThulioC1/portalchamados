@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, runTransaction, doc } from "firebase/firestore";
+import { collection, serverTimestamp, query, orderBy, limit, getDocs, runTransaction, doc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -138,11 +138,11 @@ export default function NewTicketPage() {
               url: data.secure_url,
               name: file.name
             };
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error(`Tentativa de upload falhou:`, error);
             
             // Retry para erros de rede ou servidor
-            if (retries > 0 && (error.message?.includes('fetch') || error.message?.includes('servidor'))) {
+            if (retries > 0 && (error instanceof Error && (error.message?.includes('fetch') || error.message?.includes('servidor')))) {
               console.log(`Tentando upload novamente... (${retries} tentativas restantes)`);
               await new Promise(resolve => setTimeout(resolve, 2000)); // Aguardar 2 segundos
               return uploadToCloudinary(retries - 1);
@@ -195,23 +195,24 @@ export default function NewTicketPage() {
               attachmentName,
             });
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Erro ao criar ticket:", error);
           
           // Se for erro de rede ou bloqueio, tentar novamente
-          if (retries > 0 && (error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT'))) {
+          if (retries > 0 && (error instanceof Error && ('code' in error && (error as any).code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')))) {
             console.log(`Tentando novamente... (${retries} tentativas restantes)`);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Aguardar 1 segundo
             return createTicket(retries - 1);
           }
           
           // Se esgotaram as tentativas ou é outro tipo de erro
-          if (error.code === 'permission-denied') {
+          if (error instanceof Error && 'code' in error && (error as any).code === 'permission-denied') {
             throw new Error('Você não tem permissão para criar chamados. Verifique suas credenciais.');
-          } else if (error.code === 'unavailable') {
+          } else if (error instanceof Error && 'code' in error && (error as any).code === 'unavailable') {
             throw new Error('Serviço temporariamente indisponível. Tente novamente em alguns minutos.');
           } else {
-            throw new Error(`Erro ao criar chamado: ${error.message || 'Erro desconhecido'}`);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            throw new Error(`Erro ao criar chamado: ${errorMessage}`);
           }
         }
       };

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, AuthError } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -71,7 +71,7 @@ export default function RegisterPage() {
       
       toast.success("Conta criada com sucesso!");
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error: AuthError) {
       console.error("Erro ao criar conta:", error);
       
       let errorMessage = "Erro ao criar conta. Tente novamente.";

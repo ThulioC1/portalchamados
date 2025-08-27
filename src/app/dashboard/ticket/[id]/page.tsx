@@ -10,12 +10,12 @@ import { Loader2, Paperclip, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import { Ticket } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -44,7 +44,7 @@ export default function TicketPage() {
       setUserIsAdmin(isAdmin(user.email || ""));
       fetchTicket();
     }
-  }, [user, loading]);
+  }, [user, loading, fetchTicket, router]);
 
   const fetchTicket = async () => {
     try {

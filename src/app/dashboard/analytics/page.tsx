@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
 
       fetchTickets();
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   const fetchTickets = async () => {
     try {

@@ -7,7 +7,7 @@ import { auth, db } from "@/lib/firebase";
 import { Ticket } from "@/lib/types";
 import { isAdmin } from "@/lib/auth-utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
